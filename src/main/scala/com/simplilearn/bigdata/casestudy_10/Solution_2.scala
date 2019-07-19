@@ -21,7 +21,12 @@ object Solution_2 {
   def getCompaniesByCountry(dataset: Dataset[Row]): Unit = {
     var modifiedDataset = dataset.filter("year_founded >= 1990 and year_founded <= 2000").filter("size_range == '10001+'")
         .select("name");
-    System.out.println("Companies = " + modifiedDataset.collect())
+    System.out.println("Companies = ")
+    modifiedDataset.foreach(
+      row => {
+        System.out.println(""+row.get(0).toString)
+      }
+    )
   }
 
   def getSparkSession(appName: String, master: String) = {
