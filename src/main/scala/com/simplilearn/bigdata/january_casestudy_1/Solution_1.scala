@@ -49,7 +49,7 @@ object Solution_1 {
         "wind_speed" -> wind_speedDataset
       )
 
-    val ignoreCols = List("Month", "Year", "DayBucket", "Daily")
+    val ignoreCols = List("Month", "Hour", "Year", "DayBucket", "Daily")
     for((datasetType, datasetValue) <- mapIm) {
       for(timeColumn <- ignoreCols) {
         for(column <- datasetValue.columns) {
@@ -70,7 +70,7 @@ object Solution_1 {
   }
 
   def segmentCategoricalBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String])= {
-    print(timeColumn+"-"+dataColumn+"-"+datasetType)
+    print("======="+timeColumn+"-"+dataColumn+"-"+datasetType)
     var  modifiedDataset = dataset
       .select(timeColumn, dataColumn)
       .withColumn("data", UDFUtils.valueToString(dataset(dataColumn)))
@@ -97,7 +97,7 @@ object Solution_1 {
   }
 
   def segmentBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String])= {
-    print(timeColumn+"-"+dataColumn+"-"+datasetType)
+    print("======="+timeColumn+"-"+dataColumn+"-"+datasetType)
     var  modifiedDataset = dataset
       .select(timeColumn, dataColumn)
       .withColumn("data", UDFUtils.toDouble(dataset(dataColumn)))

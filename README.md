@@ -48,6 +48,9 @@ For S3
 ==> Make sure you use region which is in code. Else you won't be able to connect.
 
 https://cloud.mongodb.com/
+https://docs.mongodb.com/spark-connector/master/configuration/#spark-output-conf
+https://docs.mongodb.com/spark-connector/master/scala/datasets-and-sql/#datatypes
+https://stackoverflow.com/questions/51707267/mongodb-atlas-connection-not-working
 
 ==> It's totally free and can be used.
 ==> Once server is created
