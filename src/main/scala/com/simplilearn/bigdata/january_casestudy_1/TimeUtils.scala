@@ -3,6 +3,8 @@ package com.simplilearn.bigdata.january_casestudy_1
 import java.sql.Timestamp
 import java.util.Calendar
 
+import scala.collection.mutable
+
 object TimeUtils {
 
   private val monthName = Array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
@@ -46,6 +48,12 @@ object TimeUtils {
     if(value == null || value.trim.length ==0)
       return "11111".toFloat
     value.toFloat
+  }
+
+  def getString(value: String): String = {
+    if(value == null || value.trim.length ==0)
+      return "NA"
+    value
   }
 
   def numberToMonthName(number: Int): String = monthName(number)

@@ -50,10 +50,7 @@ object Solution_1 {
         "wind_directionDataset" -> wind_directionDataset,
         "wind_speedDataset" -> wind_speedDataset
       )
-
-//    uploadFile()
-
-
+    
     val ignoreCols = List("Month", "Year", "DayBucket", "Daily")
     for((datasetType, datasetValue) <- mapIm) {
       for(timeColumn <- ignoreCols) {
@@ -64,14 +61,32 @@ object Solution_1 {
         }
       }
     }
+
+    for(timeColumn <- ignoreCols) {
+      for(column <- weather_descriptionDataset.columns) {
+        if(!ignoreCols.contains(column)) {
+          segmentCategoricalBucket(weather_descriptionDataset, timeColumn, column, "weather_descriptionDataset")
+        }
+      }
+    }
   }
 
-  def uploadFile() = {
-    val yourAWSCredentials = new BasicAWSCredentials(System.getenv("AWS_ACCESS_KEY_ID"), System.getenv("AWS_SECRET_ACCESS_KEY"))
-    val amazonS3Client = new AmazonS3Client(yourAWSCredentials)
-    amazonS3Client.setRegion(Region.getRegion(Regions.AP_SOUTHEAST_1))
-    amazonS3Client.setEndpoint("s3-ap-southeast-1.amazonaws.com")
-    amazonS3Client.putObject("solution1", "bucket2", new File("/Users/labuser/Desktop/code_commands"))
+  def segmentCategoricalBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String)= {
+    var  modifiedDataset = dataset
+      .select(timeColumn, dataColumn)
+      .withColumn("data", UDFUtils.valueToString(dataset(dataColumn)))
+      .filter("data != 'NA'")
+      .drop(dataColumn);
+
+    modifiedDataset = modifiedDataset.groupBy(timeColumn)
+      .agg(
+        functions.collect_list("data").as("All"),
+        functions.count("data").as("Total"))
+
+    modifiedDataset = modifiedDataset
+      .withColumn("MaxPercentage", UDFUtils.toPercentage(modifiedDataset("All"), modifiedDataset("Total"))).drop("All")
+    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
+    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://solution1/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
   }
 
   def segmentBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String)= {
@@ -87,8 +102,8 @@ object Solution_1 {
         functions.count("data").as("Total"),
         functions.max("data").as("Max"),
         functions.min("data").as("Min"))
-//    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
-    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc239727/"+ dataColumn + "/" + datasetType + "/" +timeColumn);
+    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
+    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://solution1/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
   }
 
 
