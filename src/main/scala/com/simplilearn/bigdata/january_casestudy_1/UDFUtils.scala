@@ -40,8 +40,8 @@ object UDFUtils {
   }
   }
 
-  val toFloat = udf { (value: String) => {
-    TimeUtils.getFloat(value)
+  val toDouble = udf { (value: String) => {
+    TimeUtils.getDouble(value)
   }
   }
 

@@ -1,17 +1,15 @@
 package com.simplilearn.bigdata.january_casestudy_1
 
-import java.io.File
+import java.util.Calendar
 
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.regions.{Region, Regions}
-import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.regions.Regions
+import com.mongodb.spark.MongoSpark
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
 object Solution_1 {
 
   def main(args: Array[String]): Unit = {
-
     val city_attributes: String = "/Users/labuser/Downloads/solution_1/city_attributes.csv"
     val pressure: String = "/Users/labuser/Downloads/solution_1/pressure.csv"
     val humidity: String = "/Users/labuser/Downloads/solution_1/humidity.csv"
@@ -23,7 +21,7 @@ object Solution_1 {
     val sparkSession = getSparkSession("weather-analysis", "local")
     val dataset = readFile(city_attributes, readWithHeader(citySchema(), sparkSession))
 
-    createCityMap(dataset)
+    val cityMap = createCityMap(dataset)
 
     var pressureDataset = filterAndModify(readFile(pressure, sparkSession.read.option("header", true).schema(dataSchema(StringType)).option("mode", "DROPMALFORMED")))
     print("Total Rows in Pressure.csv: "+pressureDataset.count())
@@ -40,23 +38,23 @@ object Solution_1 {
     var wind_directionDataset = filterAndModify(readFile(wind_direction, sparkSession.read.option("header", true).schema(dataSchema(StringType)).option("mode", "DROPMALFORMED")))
     print("Total Rows in wind_direction.csv: "+wind_directionDataset.count())
 
-    var wind_speedDataset = filterAndModify(readFile(pressure, sparkSession.read.option("header", true).schema(dataSchema(StringType)).option("mode", "DROPMALFORMED")))
+    var wind_speedDataset = filterAndModify(readFile(wind_speed, sparkSession.read.option("header", true).schema(dataSchema(StringType)).option("mode", "DROPMALFORMED")))
     print("Total Rows in wind_speed.csv: "+wind_speedDataset.count())
 
     val mapIm =
-      Map("pressureDataset" -> pressureDataset,
-        "humidityDataset" -> humidityDataset,
-        "temperatureDataset" -> temperatureDataset,
-        "wind_directionDataset" -> wind_directionDataset,
-        "wind_speedDataset" -> wind_speedDataset
+      Map("pressure" -> pressureDataset,
+        "humidity" -> humidityDataset,
+        "temperature" -> temperatureDataset,
+        "wind_direction" -> wind_directionDataset,
+        "wind_speed" -> wind_speedDataset
       )
-    
+
     val ignoreCols = List("Month", "Year", "DayBucket", "Daily")
     for((datasetType, datasetValue) <- mapIm) {
       for(timeColumn <- ignoreCols) {
         for(column <- datasetValue.columns) {
           if(!ignoreCols.contains(column)) {
-            segmentBucket(datasetValue, timeColumn, column, datasetType)
+            segmentBucket(datasetValue, timeColumn, column, datasetType, cityMap)
           }
         }
       }
@@ -65,13 +63,14 @@ object Solution_1 {
     for(timeColumn <- ignoreCols) {
       for(column <- weather_descriptionDataset.columns) {
         if(!ignoreCols.contains(column)) {
-          segmentCategoricalBucket(weather_descriptionDataset, timeColumn, column, "weather_descriptionDataset")
+          segmentCategoricalBucket(weather_descriptionDataset, timeColumn, column, "weather_description", cityMap)
         }
       }
     }
   }
 
-  def segmentCategoricalBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String)= {
+  def segmentCategoricalBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String])= {
+    print(timeColumn+"-"+dataColumn+"-"+datasetType)
     var  modifiedDataset = dataset
       .select(timeColumn, dataColumn)
       .withColumn("data", UDFUtils.valueToString(dataset(dataColumn)))
@@ -82,18 +81,26 @@ object Solution_1 {
       .agg(
         functions.collect_list("data").as("All"),
         functions.count("data").as("Total"))
+      .withColumn("country", functions.lit(cityMap.get(dataColumn.toLowerCase()).get))
+      .withColumn("city", functions.lit(dataColumn))
+      .withColumn("recordtype", functions.lit(datasetType))
+      .withColumn("timeType", functions.lit(timeColumn))
 
     modifiedDataset = modifiedDataset
       .withColumn("MaxPercentage", UDFUtils.toPercentage(modifiedDataset("All"), modifiedDataset("Total"))).drop("All")
-    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
-    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://solution1/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
+//    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
+//    for(column <- modifiedDataset.columns) {
+//      modifiedDataset = modifiedDataset.withColumn(column, modifiedDataset(column).cast(StringType))
+//    }
+    MongoSpark.save(modifiedDataset)
+//    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
   }
 
-  def segmentBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String)= {
-    val folderName = timeColumn + "-" + dataColumn;
+  def segmentBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String])= {
+    print(timeColumn+"-"+dataColumn+"-"+datasetType)
     var  modifiedDataset = dataset
       .select(timeColumn, dataColumn)
-      .withColumn("data", UDFUtils.toFloat(dataset(dataColumn)))
+      .withColumn("data", UDFUtils.toDouble(dataset(dataColumn)))
       .filter("data != 11111")
       .drop(dataColumn);
     modifiedDataset = modifiedDataset.groupBy(timeColumn)
@@ -102,8 +109,18 @@ object Solution_1 {
         functions.count("data").as("Total"),
         functions.max("data").as("Max"),
         functions.min("data").as("Min"))
-    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
-    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://solution1/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
+        .withColumn("country", functions.lit(cityMap.get(dataColumn.toLowerCase()).get))
+      .withColumn("city", functions.lit(dataColumn))
+      .withColumn("recordtype", functions.lit(datasetType))
+      .withColumn("timeType", functions.lit(timeColumn))
+
+
+//    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
+//    for(column <- modifiedDataset.columns) {
+//      modifiedDataset = modifiedDataset.withColumn(column, modifiedDataset(column).cast(StringType))
+//    }
+    MongoSpark.save(modifiedDataset)
+//    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
   }
 
 
@@ -121,14 +138,20 @@ object Solution_1 {
     */
 
   def createCityMap(dataset: Dataset[Row]): Map[String, String] = {
-    val cityCountryMap = dataset.select("City", "Country").collect().map(r => (r.get(0).toString, r.get(1).toString)).toMap
+    val cityCountryMap = dataset.select("City", "Country").collect().map(r => (r.get(0).toString.toLowerCase, r.get(1).toString.toLowerCase)).toMap
     print(cityCountryMap)
     cityCountryMap
   }
 
   def getSparkSession(appName: String, master: String) = {
+    val username = System.getenv("MONGOUSERNAME")
+    val password = System.getenv("MONGOPASSWORD")
+    val uri: String = "mongodb://"+username+":"+password+"@cluster0-shard-00-00-50m8b.mongodb.net:27017,cluster0-shard-00-01-50m8b.mongodb.net:27017,cluster0-shard-00-02-50m8b.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority"
     val sparkSession = SparkSession.builder.appName(appName).master(if (master.equalsIgnoreCase("local")) "local[*]"
-    else master).getOrCreate
+    else master)
+      .config("spark.mongodb.output.uri", uri)
+      .config("spark.mongodb.output.collection", "weatherdata-"+Calendar.getInstance.getTimeInMillis)
+      .getOrCreate
     System.out.println("Spark version " + sparkSession.version)
     val hadoopConf = sparkSession.sparkContext.hadoopConfiguration
     hadoopConf.set("fs.s3.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
@@ -156,8 +179,8 @@ object Solution_1 {
     StructType(Array(
       StructField("City", StringType, true),
       StructField("Country", StringType, true),
-      StructField("Latitude", FloatType, true),
-      StructField("Longitude", FloatType, true)))
+      StructField("Latitude", DoubleType, true),
+      StructField("Longitude", DoubleType, true)))
   }
 
   def readWithHeader(schema: StructType, sparkSession: SparkSession) = {

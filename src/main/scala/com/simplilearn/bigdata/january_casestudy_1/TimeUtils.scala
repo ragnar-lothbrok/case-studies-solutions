@@ -44,10 +44,10 @@ object TimeUtils {
     cal.get(Calendar.YEAR) + "-" +cal.get(Calendar.DAY_OF_MONTH)
   }
 
-  def getFloat(value: String): Float = {
+  def getDouble(value: String): Double = {
     if(value == null || value.trim.length ==0)
-      return "11111".toFloat
-    value.toFloat
+      return "11111".toDouble
+    value.toDouble
   }
 
   def getString(value: String): String = {
