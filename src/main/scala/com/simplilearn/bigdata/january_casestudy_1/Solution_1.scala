@@ -10,15 +10,22 @@ import org.apache.spark.sql.types._
 object Solution_1 {
 
   def main(args: Array[String]): Unit = {
-    val city_attributes: String = "/Users/labuser/Downloads/solution_1/city_attributes.csv"
-    val pressure: String = "/Users/labuser/Downloads/solution_1/pressure.csv"
-    val humidity: String = "/Users/labuser/Downloads/solution_1/humidity.csv"
-    val temperature: String = "/Users/labuser/Downloads/solution_1/temperature.csv"
-    val weather_description: String = "/Users/labuser/Downloads/solution_1/weather_description.csv"
-    val wind_direction: String = "/Users/labuser/Downloads/solution_1/wind_direction.csv"
-    val wind_speed: String = "/Users/labuser/Downloads/solution_1/wind_speed.csv"
 
-    val sparkSession = getSparkSession("weather-analysis", "local")
+    if(args.length != 8) {
+      System.out.println("Please provide <city_attributes> <pressure> <humidity> <temperature> <weather_description> <wind_direction> <wind_speed> <spark_master>")
+      System.exit(0)
+    }
+
+    val city_attributes: String = args(0)
+    val pressure: String = args(1)
+    val humidity: String = args(2)
+    val temperature: String = args(3)
+    val weather_description: String = args(4)
+    val wind_direction: String = args(5)
+    val wind_speed: String = args(6)
+
+
+    val sparkSession = getSparkSession("weather-analysis", args(7))
     val dataset = readFile(city_attributes, readWithHeader(citySchema(), sparkSession))
 
     val cityMap = createCityMap(dataset)
@@ -88,12 +95,14 @@ object Solution_1 {
 
     modifiedDataset = modifiedDataset
       .withColumn("MaxPercentage", UDFUtils.toPercentage(modifiedDataset("All"), modifiedDataset("Total"))).drop("All")
-//    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
-//    for(column <- modifiedDataset.columns) {
-//      modifiedDataset = modifiedDataset.withColumn(column, modifiedDataset(column).cast(StringType))
-//    }
+    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
+    print("Outout created in local tmp directory "+timeColumn+"-"+dataColumn+"-"+datasetType)
+
+    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
+    print("Data Pushed to S3 for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+
     MongoSpark.save(modifiedDataset)
-//    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
+    print("Data Pushed to Mongo for "+timeColumn+"-"+dataColumn+"-"+datasetType)
   }
 
   def segmentBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String])= {
@@ -115,12 +124,16 @@ object Solution_1 {
       .withColumn("timeType", functions.lit(timeColumn))
 
 
-//    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
+    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
+    print("Outout created in local tmp directory "+timeColumn+"-"+dataColumn+"-"+datasetType)
 //    for(column <- modifiedDataset.columns) {
 //      modifiedDataset = modifiedDataset.withColumn(column, modifiedDataset(column).cast(StringType))
 //    }
+    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
+    print("Data Pushed to S3 for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+
     MongoSpark.save(modifiedDataset)
-//    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
+    print("Data Pushed to Mongo for "+timeColumn+"-"+dataColumn+"-"+datasetType)
   }
 
 
@@ -178,9 +191,7 @@ object Solution_1 {
   def citySchema() = {
     StructType(Array(
       StructField("City", StringType, true),
-      StructField("Country", StringType, true),
-      StructField("Latitude", DoubleType, true),
-      StructField("Longitude", DoubleType, true)))
+      StructField("Country", StringType, true)))
   }
 
   def readWithHeader(schema: StructType, sparkSession: SparkSession) = {
