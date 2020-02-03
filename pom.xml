@@ -188,6 +188,12 @@
             <version>3.3.0.RC5</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.10</artifactId>
+            <version>0.10.2.0</version>
+        </dependency>
 
     </dependencies>
 </project>
