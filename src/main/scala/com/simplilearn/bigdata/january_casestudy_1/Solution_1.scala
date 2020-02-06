@@ -11,8 +11,8 @@ object Solution_1 {
 
   def main(args: Array[String]): Unit = {
 
-    if(args.length != 8) {
-      System.out.println("Please provide <city_attributes> <pressure> <humidity> <temperature> <weather_description> <wind_direction> <wind_speed> <spark_master>")
+    if(args.length != 10) {
+      System.out.println("Please provide <city_attributes> <pressure> <humidity> <temperature> <weather_description> <wind_direction> <wind_speed> <writeS3> <writeMongo> <spark_master>")
       System.exit(0)
     }
 
@@ -23,9 +23,11 @@ object Solution_1 {
     val weather_description: String = args(4)
     val wind_direction: String = args(5)
     val wind_speed: String = args(6)
+    val writeToS3: Boolean = args(7).toBoolean
+    val writeToMongo: Boolean = args(8).toBoolean
 
 
-    val sparkSession = getSparkSession("weather-analysis", args(7))
+    val sparkSession = getSparkSession("weather-analysis", args(9))
     val dataset = readFile(city_attributes, readWithHeader(citySchema(), sparkSession))
 
     val cityMap = createCityMap(dataset)
@@ -61,7 +63,7 @@ object Solution_1 {
       for(timeColumn <- ignoreCols) {
         for(column <- datasetValue.columns) {
           if(!ignoreCols.contains(column)) {
-            segmentBucket(datasetValue, timeColumn, column, datasetType, cityMap)
+            segmentBucket(datasetValue, timeColumn, column, datasetType, cityMap, writeToS3, writeToMongo)
           }
         }
       }
@@ -70,13 +72,13 @@ object Solution_1 {
     for(timeColumn <- ignoreCols) {
       for(column <- weather_descriptionDataset.columns) {
         if(!ignoreCols.contains(column)) {
-          segmentCategoricalBucket(weather_descriptionDataset, timeColumn, column, "weather_description", cityMap)
+          segmentCategoricalBucket(weather_descriptionDataset, timeColumn, column, "weather_description", cityMap, writeToS3, writeToMongo)
         }
       }
     }
   }
 
-  def segmentCategoricalBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String])= {
+  def segmentCategoricalBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String], writeToS3: Boolean, writeToMongo: Boolean)= {
     print("======="+timeColumn+"-"+dataColumn+"-"+datasetType)
     var  modifiedDataset = dataset
       .select(timeColumn, dataColumn)
@@ -98,14 +100,18 @@ object Solution_1 {
     modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
     print("Outout created in local tmp directory "+timeColumn+"-"+dataColumn+"-"+datasetType)
 
-    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
-    print("Data Pushed to S3 for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+    if(writeToMongo) {
+      MongoSpark.save(modifiedDataset)
+      print("Data Pushed to Mongo for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+    }
 
-    MongoSpark.save(modifiedDataset)
-    print("Data Pushed to Mongo for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+    if(writeToS3) {
+      modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
+      print("Data Pushed to S3 for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+    }
   }
 
-  def segmentBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String])= {
+  def segmentBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String], writeToS3: Boolean, writeToMongo: Boolean)= {
     print("======="+timeColumn+"-"+dataColumn+"-"+datasetType)
     var  modifiedDataset = dataset
       .select(timeColumn, dataColumn)
@@ -129,11 +135,17 @@ object Solution_1 {
 //    for(column <- modifiedDataset.columns) {
 //      modifiedDataset = modifiedDataset.withColumn(column, modifiedDataset(column).cast(StringType))
 //    }
-    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
-    print("Data Pushed to S3 for "+timeColumn+"-"+dataColumn+"-"+datasetType)
 
-    MongoSpark.save(modifiedDataset)
-    print("Data Pushed to Mongo for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+   if(writeToMongo) {
+     MongoSpark.save(modifiedDataset)
+     print("Data Pushed to Mongo for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+   }
+
+    if(writeToS3) {
+      modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
+      print("Data Pushed to S3 for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+    }
+
   }
 
 

@@ -67,7 +67,7 @@ export AWS_SECRET_ACCESS_KEY=
 
 
 For Local 
-*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.Solution_1 /Users/labuser/Downloads/solution_1/city_attributes.csv /Users/labuser/Downloads/solution_1/pressure.csv /Users/labuser/Downloads/solution_1/humidity.csv /Users/labuser/Downloads/solution_1/temperature.csv /Users/labuser/Downloads/solution_1/weather_description.csv /Users/labuser/Downloads/solution_1/wind_direction.csv /Users/labuser/Downloads/solution_1/wind_speed.csv local
+*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.Solution_1 /Users/labuser/Downloads/solution_1/city_attributes.csv /Users/labuser/Downloads/solution_1/pressure.csv /Users/labuser/Downloads/solution_1/humidity.csv /Users/labuser/Downloads/solution_1/temperature.csv /Users/labuser/Downloads/solution_1/weather_description.csv /Users/labuser/Downloads/solution_1/wind_direction.csv /Users/labuser/Downloads/solution_1/wind_speed.csv false true local
 
 
 *java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.KafkaProducer localhost:9092 city_topic /Users/labuser/Downloads/solution_1/city_attributes.csv
