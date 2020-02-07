@@ -11,8 +11,8 @@ object Solution_1 {
 
   def main(args: Array[String]): Unit = {
 
-    if(args.length != 10) {
-      System.out.println("Please provide <city_attributes> <pressure> <humidity> <temperature> <weather_description> <wind_direction> <wind_speed> <writeS3> <writeMongo> <spark_master>")
+    if(args.length != 11) {
+      System.out.println("Please provide <city_attributes> <pressure> <humidity> <temperature> <weather_description> <wind_direction> <wind_speed> <writeS3> <writeMongo> <bucket> <spark_master>")
       System.exit(0)
     }
 
@@ -25,9 +25,10 @@ object Solution_1 {
     val wind_speed: String = args(6)
     val writeToS3: Boolean = args(7).toBoolean
     val writeToMongo: Boolean = args(8).toBoolean
+    val bucket: String = args(9)
 
 
-    val sparkSession = getSparkSession("weather-analysis", args(9))
+    val sparkSession = getSparkSession("weather-analysis", args(10))
     val dataset = readFile(city_attributes, readWithHeader(citySchema(), sparkSession))
 
     val cityMap = createCityMap(dataset)
@@ -63,7 +64,7 @@ object Solution_1 {
       for(timeColumn <- ignoreCols) {
         for(column <- datasetValue.columns) {
           if(!ignoreCols.contains(column)) {
-            segmentBucket(datasetValue, timeColumn, column, datasetType, cityMap, writeToS3, writeToMongo)
+            segmentBucket(datasetValue, timeColumn, column, datasetType, cityMap, writeToS3, writeToMongo, bucket)
           }
         }
       }
@@ -72,13 +73,13 @@ object Solution_1 {
     for(timeColumn <- ignoreCols) {
       for(column <- weather_descriptionDataset.columns) {
         if(!ignoreCols.contains(column)) {
-          segmentCategoricalBucket(weather_descriptionDataset, timeColumn, column, "weather_description", cityMap, writeToS3, writeToMongo)
+          segmentCategoricalBucket(weather_descriptionDataset, timeColumn, column, "weather_description", cityMap, writeToS3, writeToMongo, bucket)
         }
       }
     }
   }
 
-  def segmentCategoricalBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String], writeToS3: Boolean, writeToMongo: Boolean)= {
+  def segmentCategoricalBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String], writeToS3: Boolean, writeToMongo: Boolean, bucket: String)= {
     print("======="+timeColumn+"-"+dataColumn+"-"+datasetType)
     var  modifiedDataset = dataset
       .select(timeColumn, dataColumn)
@@ -98,7 +99,9 @@ object Solution_1 {
     modifiedDataset = modifiedDataset
       .withColumn("MaxPercentage", UDFUtils.toPercentage(modifiedDataset("All"), modifiedDataset("Total"))).drop("All")
     modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
-    print("Outout created in local tmp directory "+timeColumn+"-"+dataColumn+"-"+datasetType)
+    print("Output created in local tmp directory "+timeColumn+"-"+dataColumn+"-"+datasetType)
+
+    modifiedDataset.head(5)
 
     if(writeToMongo) {
       MongoSpark.save(modifiedDataset)
@@ -106,12 +109,12 @@ object Solution_1 {
     }
 
     if(writeToS3) {
-      modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
+      modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://"+bucket+"/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
       print("Data Pushed to S3 for "+timeColumn+"-"+dataColumn+"-"+datasetType)
     }
   }
 
-  def segmentBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String], writeToS3: Boolean, writeToMongo: Boolean)= {
+  def segmentBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String], writeToS3: Boolean, writeToMongo: Boolean, bucket: String)= {
     print("======="+timeColumn+"-"+dataColumn+"-"+datasetType)
     var  modifiedDataset = dataset
       .select(timeColumn, dataColumn)
@@ -124,14 +127,15 @@ object Solution_1 {
         functions.count("data").as("Total"),
         functions.max("data").as("Max"),
         functions.min("data").as("Min"))
-        .withColumn("country", functions.lit(cityMap.get(dataColumn.toLowerCase()).get))
+          .withColumn("country", functions.lit(cityMap.get(dataColumn.toLowerCase()).get))
       .withColumn("city", functions.lit(dataColumn))
       .withColumn("recordtype", functions.lit(datasetType))
       .withColumn("timeType", functions.lit(timeColumn))
 
+    modifiedDataset.head(5)
 
     modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
-    print("Outout created in local tmp directory "+timeColumn+"-"+dataColumn+"-"+datasetType)
+    print("Output created in local tmp directory "+timeColumn+"-"+dataColumn+"-"+datasetType)
 //    for(column <- modifiedDataset.columns) {
 //      modifiedDataset = modifiedDataset.withColumn(column, modifiedDataset(column).cast(StringType))
 //    }
@@ -142,7 +146,7 @@ object Solution_1 {
    }
 
     if(writeToS3) {
-      modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://abc321111/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
+      modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://"+bucket+"/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
       print("Data Pushed to S3 for "+timeColumn+"-"+dataColumn+"-"+datasetType)
     }
 
@@ -169,13 +173,13 @@ object Solution_1 {
   }
 
   def getSparkSession(appName: String, master: String) = {
-    val username = System.getenv("MONGOUSERNAME")
-    val password = System.getenv("MONGOPASSWORD")
-    val uri: String = "mongodb://"+username+":"+password+"@cluster0-shard-00-00-50m8b.mongodb.net:27017,cluster0-shard-00-01-50m8b.mongodb.net:27017,cluster0-shard-00-02-50m8b.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority"
+//    val username = System.getenv("MONGOUSERNAME")
+//    val password = System.getenv("MONGOPASSWORD")
+//    val uri: String = "mongodb://"+username+":"+password+"@cluster0-shard-00-00-50m8b.mongodb.net:27017,cluster0-shard-00-01-50m8b.mongodb.net:27017,cluster0-shard-00-02-50m8b.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority"
     val sparkSession = SparkSession.builder.appName(appName).master(if (master.equalsIgnoreCase("local")) "local[*]"
     else master)
-      .config("spark.mongodb.output.uri", uri)
-      .config("spark.mongodb.output.collection", "weatherdata-"+Calendar.getInstance.getTimeInMillis)
+//      .config("spark.mongodb.output.uri", uri)
+//      .config("spark.mongodb.output.collection", "weatherdata-"+Calendar.getInstance.getTimeInMillis)
       .getOrCreate
     System.out.println("Spark version " + sparkSession.version)
     val hadoopConf = sparkSession.sparkContext.hadoopConfiguration
@@ -207,6 +211,9 @@ object Solution_1 {
   }
 
   def readWithHeader(schema: StructType, sparkSession: SparkSession) = {
-    sparkSession.read.option("header", true).schema(schema).option("mode", "DROPMALFORMED")
+    sparkSession
+      .read
+      .option("header", false)
+      .schema(schema).option("mode", "DROPMALFORMED")
   }
 }
