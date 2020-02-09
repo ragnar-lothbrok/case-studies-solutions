@@ -1,12 +1,13 @@
 package com.simplilearn.bigdata.january_casestudy_1
 
-import java.util.Calendar
-
 import com.amazonaws.regions.Regions
 import com.mongodb.spark.MongoSpark
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
+/**
+ * Weather Analytics
+ */
 object Solution_1 {
 
   def main(args: Array[String]): Unit = {

@@ -6,6 +6,9 @@ import com.simplilearn.bigdata.january_casestudy_1.UDFUtils
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
+/**
+ * E- Commerce Analytics
+ */
 object Solution_1 {
 
   def main(args: Array[String]): Unit = {
@@ -42,14 +45,32 @@ object Solution_1 {
       .drop("order_freight_value")
       .sort(functions.desc("customer_city"))
 
+    /**
+     * Total Freight charges.
+     */
     write(modifiedDataset, writeToS3, writeToMongo, bucket, "total_freight_value_per_city", "Total")
 
     modifiedDataset = modifiedDataset.select("totalFreightValuePerCity").agg(functions.sum("totalFreightValuePerCity").as("totalFreightValue")).drop("totalFreightValuePerCity")
+
+    /**
+     * Freight charges distribution in each Customer City.
+     */
     write(modifiedDataset, writeToS3, writeToMongo, bucket, "total_freight_value", "Total")
   }
 
   /**
-   * Daily and Weekly Sales
+   * a.	SALES
+   * •	Total sales.
+   * •	Total Sales in each Customer City.
+   * •	Total sales in each Customer State.
+   * b.	ORDERS
+   * •	Total number of orders sold.
+   * •	City wise order distribution.
+   * •	State wise order distribution.
+   * •	Average Review score per Order.
+   * •	Average Freight charges per order.
+   * •	Average time taken to approve the orders. (Order Approved – Order Purchased).
+   * •	Average order delivery time.
    *
    * @param dataset
    * @param writeToS3
@@ -58,7 +79,6 @@ object Solution_1 {
    */
   def solution1(dataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String, timeBucket: String) = {
 
-    //Total Orders & Sales City Wise per day for each City
     var modifiedDataset = dataset
       .select(timeBucket, "customer_city", "customer_state", "order_products_value")
       .groupBy(timeBucket, "customer_city", "customer_state")
@@ -68,29 +88,46 @@ object Solution_1 {
       .drop("order_products_value")
       .sort(functions.desc(timeBucket))
 
-    write(modifiedDataset, writeToS3, writeToMongo, bucket, "day_sales_order_state", timeBucket)
+    /**
+     * Total sales in each Customer City.
+     * City wise order distribution.
+     */
+    write(modifiedDataset, writeToS3, writeToMongo, bucket, "day_sales_order_city", timeBucket)
 
-    //Total Orders & Sales City Wise for each Country
+
     modifiedDataset = modifiedDataset.select(timeBucket, "customer_state", "totalSalesCitywise", "totalOrderCityWise")
       .groupBy(timeBucket, "customer_state")
       .agg(
-        functions.sum("totalSalesCitywise").as("totalSalesCountrywise"),
-        functions.sum("totalOrderCityWise").as("totalOrderCountryWise"))
+        functions.sum("totalSalesCitywise").as("totalSalesStatewise"),
+        functions.sum("totalOrderCityWise").as("totalOrderStateWise"))
       .drop("totalSalesCitywise", "totalOrderCityWise")
       .sort(functions.desc(timeBucket))
 
-    write(modifiedDataset, writeToS3, writeToMongo, bucket, "day_sales_order_country", timeBucket)
+    /**
+     * Total sales in each Customer State.
+     * State wise order distribution.
+     */
+    write(modifiedDataset, writeToS3, writeToMongo, bucket, "day_sales_order_state", timeBucket)
 
 
-    //Total Orders
     modifiedDataset = dataset
       .select(timeBucket)
       .groupBy(timeBucket)
       .agg(
         functions.count("*").as("totalOrders"))
 
+    /**
+     * Total number of orders sold.
+     */
     write(modifiedDataset, writeToS3, writeToMongo, bucket, "total_orders_per_day", timeBucket)
 
+
+    /**
+     * Average Review score per Order.
+     * Average Freight charges per order.
+     * Average time taken to approve the orders. (Order Approved – Order Purchased).
+     * Average order delivery time.
+     */
     modifiedDataset = dataset
       .select(timeBucket, "review_score", "order_freight_value", "order_purchase_timestamp", "order_aproved_at", "order_delivered_customer_date")
       .withColumn("timetakentoapprove", UDFUtils.timeTakenToApprove(dataset("order_purchase_timestamp"), dataset("order_aproved_at")))
@@ -143,7 +180,7 @@ object Solution_1 {
     val sparkSession = SparkSession.builder.appName(appName).master(if (master.equalsIgnoreCase("local")) "local[*]"
     else master)
       //      .config("spark.mongodb.output.uri", uri)
-      //      .config("spark.mongodb.output.collection", "weatherdata-"+Calendar.getInstance.getTimeInMillis)
+      //      .config("spark.mongodb.output.collection", "ecommerce-"+Calendar.getInstance.getTimeInMillis)
       .getOrCreate
     System.out.println("Spark version " + sparkSession.version)
     val hadoopConf = sparkSession.sparkContext.hadoopConfiguration
