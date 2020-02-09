@@ -90,7 +90,7 @@ object Solution_1 {
     modifiedDataset = modifiedDataset.groupBy(timeColumn)
       .agg(
         functions.collect_list("data").as("All"),
-        functions.count("data").as("Total"))
+        functions.count("*").as("Total"))
       .withColumn("country", functions.lit(cityMap.get(dataColumn.toLowerCase()).get))
       .withColumn("city", functions.lit(dataColumn))
       .withColumn("recordtype", functions.lit(datasetType))
@@ -124,7 +124,7 @@ object Solution_1 {
     modifiedDataset = modifiedDataset.groupBy(timeColumn)
       .agg(
         functions.avg("data").as("Avg"),
-        functions.count("data").as("Total"),
+        functions.count("*").as("Total"),
         functions.max("data").as("Max"),
         functions.min("data").as("Min"))
           .withColumn("country", functions.lit(cityMap.get(dataColumn.toLowerCase()).get))

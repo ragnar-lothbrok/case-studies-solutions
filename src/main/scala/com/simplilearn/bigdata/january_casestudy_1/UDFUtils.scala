@@ -51,9 +51,38 @@ object UDFUtils {
     }
   }
 
-  val toPercentage = udf { (value: mutable.WrappedArray[String], total: Long) => {
-    val tuple = mutable.ListMap(value.toArray.toSeq.groupBy(identity).mapValues(_.map(_ => 1).reduce(_ + _)).toSeq.sortBy(_._2):_*).toList(0)
-    tuple._1 + "-"+ (tuple._2 / (.01f * total)) +" %"
+  val longToString =
+    udf { (value: Long) => {
+      value.toString
+    }
   }
+
+  val toPercentage = udf { (value: mutable.WrappedArray[String], total: Long) => {
+      val tuple = mutable.ListMap(value.toArray.toSeq.groupBy(identity).mapValues(_.map(_ => 1).reduce(_ + _)).toSeq.sortBy(_._2):_*).toList(0)
+      tuple._1 + "-"+ (tuple._2 / (.01f * total)) +" %"
+    }
+  }
+
+  val getDayFromString =
+    udf { (value: String) => {
+      TimeUtils.getDayFromString(value)
+    }
+  }
+
+  val getWeekFromString =
+    udf { (value: String) => {
+      TimeUtils.getWeekFromString(value)
+    }
+  }
+
+
+  val timeTakenToApprove = udf { (orderPlacedTime: String, timeToApprove: String) => {
+      TimeUtils.getWeekFromString(orderPlacedTime, timeToApprove)
+    }
+  }
+
+  val timeTakenToDeliver = udf { (orderPlacedTime: String, timeToDeliver: String) => {
+      TimeUtils.getWeekFromString(orderPlacedTime, timeToDeliver)
+    }
   }
 }
