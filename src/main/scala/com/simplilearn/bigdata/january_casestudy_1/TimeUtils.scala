@@ -100,7 +100,7 @@ object TimeUtils {
     return "Week"
   }
 
-  def getDayFromString(orderPlacedTime: String, timeToApprove: String): Long = {
+  def getTimeDiffInMS(orderPlacedTime: String, timeToApprove: String): Long = {
     val FORMAT1 = new java.text.SimpleDateFormat("dd/MM/yy HH:mm")
     try
       {

@@ -46,14 +46,14 @@ object Solution_1 {
       .sort(functions.desc("customer_city"))
 
     /**
-     * Total Freight charges.
+     * * Freight charges distribution in each Customer City.
      */
     write(modifiedDataset, writeToS3, writeToMongo, bucket, "total_freight_value_per_city", "Total")
 
     modifiedDataset = modifiedDataset.select("totalFreightValuePerCity").agg(functions.sum("totalFreightValuePerCity").as("totalFreightValue")).drop("totalFreightValuePerCity")
 
     /**
-     * Freight charges distribution in each Customer City.
+     * Total Freight charges.
      */
     write(modifiedDataset, writeToS3, writeToMongo, bucket, "total_freight_value", "Total")
   }

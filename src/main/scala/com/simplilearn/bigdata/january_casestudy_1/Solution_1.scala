@@ -80,6 +80,17 @@ object Solution_1 {
     }
   }
 
+  /**
+   * Stats of Categorical fields
+   * @param dataset
+   * @param timeColumn
+   * @param dataColumn
+   * @param datasetType
+   * @param cityMap
+   * @param writeToS3
+   * @param writeToMongo
+   * @param bucket
+   */
   def segmentCategoricalBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String], writeToS3: Boolean, writeToMongo: Boolean, bucket: String)= {
     print("======="+timeColumn+"-"+dataColumn+"-"+datasetType)
     var  modifiedDataset = dataset
@@ -115,6 +126,17 @@ object Solution_1 {
     }
   }
 
+  /**
+   * Min, Max, Avg , Total Records Stats of numerical fields
+   * @param dataset
+   * @param timeColumn
+   * @param dataColumn
+   * @param datasetType
+   * @param cityMap
+   * @param writeToS3
+   * @param writeToMongo
+   * @param bucket
+   */
   def segmentBucket(dataset: Dataset[Row], timeColumn: String, dataColumn: String, datasetType: String, cityMap: Map[String, String], writeToS3: Boolean, writeToMongo: Boolean, bucket: String)= {
     print("======="+timeColumn+"-"+dataColumn+"-"+datasetType)
     var  modifiedDataset = dataset
