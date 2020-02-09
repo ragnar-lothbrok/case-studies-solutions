@@ -222,7 +222,7 @@ object Solution_1 {
   def readWithHeader(schema: StructType, sparkSession: SparkSession) = {
     sparkSession
       .read
-      .option("header", true)
+      .option("header", false)
       .schema(schema).option("mode", "DROPMALFORMED")
   }
 }

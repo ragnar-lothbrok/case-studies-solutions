@@ -98,5 +98,7 @@ wind_direction.csv datetime,Vancouver,Portland,San Francisco,Seattle,Los Angeles
 wind_speed.csv datetime,Vancouver,Portland,San Francisco,Seattle,Los Angeles,San Diego,Las Vegas,Phoenix,Albuquerque,Denver,San Antonio,Dallas,Houston,Kansas City,Minneapolis,Saint Louis,Chicago,Nashville,Indianapolis,Atlanta,Detroit,Jacksonville,Charlotte,Miami,Pittsburgh,Toronto,Philadelphia,New York,Montreal,Boston,Beersheba,Tel Aviv District,Eilat,Haifa,Nahariyya,Jerusalem
 
 
+Headers
+olist_public_dataset.csv id,order_status,order_products_value,order_freight_value,order_items_qty,customer_city,customer_state,customer_zip_code_prefix,product_name_lenght,product_description_lenght,product_photos_qty,review_score,order_purchase_timestamp,order_aproved_at,order_delivered_customer_date
 
-/Users/labuser/Downloads/olist_public_dataset.csv false false bucket local
+java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_2.Solution_1 /Users/labuser/Downloads/olist_public_dataset.csv false false bucket local
