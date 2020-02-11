@@ -174,13 +174,15 @@ object Solution_1 {
 
 
   def getSparkSession(appName: String, master: String) = {
-    //    val username = System.getenv("MONGOUSERNAME")
-    //    val password = System.getenv("MONGOPASSWORD")
-    //    val uri: String = "mongodb://"+username+":"+password+"@cluster0-shard-00-00-50m8b.mongodb.net:27017,cluster0-shard-00-01-50m8b.mongodb.net:27017,cluster0-shard-00-02-50m8b.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority"
+    val username = System.getenv("MONGOUSERNAME")
+    val password = System.getenv("MONGOPASSWORD")
+    val server   = System.getenv("MONGOSERVER")
+    val uri: String = "mongodb://" + username + ":" + password + "@" + server + ":27017"
     val sparkSession = SparkSession.builder.appName(appName).master(if (master.equalsIgnoreCase("local")) "local[*]"
     else master)
-      //      .config("spark.mongodb.output.uri", uri)
-      //      .config("spark.mongodb.output.collection", "ecommerce-"+Calendar.getInstance.getTimeInMillis)
+      .config("spark.mongodb.output.uri", uri)
+      .config("spark.mongodb.output.collection", "youtube")
+      .config("spark.mongodb.output.database", "test")
       .getOrCreate
     System.out.println("Spark version " + sparkSession.version)
     val hadoopConf = sparkSession.sparkContext.hadoopConfiguration

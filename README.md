@@ -23,6 +23,7 @@ A spark project with Java.
 ###  Check job on yarn
 http://<yarn_url>:8088/cluster
 
+Make sure you create S3 bucket in US EAST 2(Oregon) only. There are some connecting issues with other regions.
 
 Create Directory and upload Jar file and all CSV Files
 
@@ -61,7 +62,7 @@ https://stackoverflow.com/questions/51707267/mongodb-atlas-connection-not-workin
 
 export MONGOUSERNAME=
 export MONGOPASSWORD=
-
+export MONGOSERVER=
 export AWS_ACCESS_KEY_ID=
 export AWS_SECRET_ACCESS_KEY=
 
