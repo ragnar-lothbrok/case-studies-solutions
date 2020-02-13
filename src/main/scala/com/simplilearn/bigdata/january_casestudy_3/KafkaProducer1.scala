@@ -6,7 +6,7 @@ import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
 import scala.io.Source
 
-object KafkaProducer {
+object KafkaProducer1 {
 
   def main(args: Array[String]): Unit = {
     if(args.length != 3) {

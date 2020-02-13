@@ -88,7 +88,7 @@ object Solution_3 {
   }
 
   /**
-   *	All videos belong to any given channel
+   *	All unique videos with title
    */
   def solution13(dataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String): Unit = {
 
@@ -236,7 +236,7 @@ object Solution_3 {
 
     val result1 = uniqueVideoDataset
       .select("video_id", "likes", "views")
-      .withColumn("score", UDFUtils.commentPerViews(uniqueVideoDataset("likes"), uniqueVideoDataset("views")))
+      .withColumn("score", UDFUtils.likesPerViews(uniqueVideoDataset("likes"), uniqueVideoDataset("views")))
       .drop("likes", "publish_time", "views")
       .orderBy(functions.desc("score")).limit(3)
     write(result1, writeToS3, writeToMongo, bucket, "mostlikessperviews")

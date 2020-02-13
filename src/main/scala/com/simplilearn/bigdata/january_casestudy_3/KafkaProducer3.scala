@@ -19,7 +19,7 @@ case class Category(
                    )
 
 
-object KafkaProducer {
+object KafkaProducer3 {
 
   def main(args: Array[String]): Unit = {
     if (args.length != 3) {
