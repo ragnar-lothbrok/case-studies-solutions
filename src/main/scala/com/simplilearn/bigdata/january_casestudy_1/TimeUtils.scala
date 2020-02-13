@@ -55,6 +55,11 @@ object TimeUtils {
     value
   }
 
+  def viewsPerDuration(views: Long, currentDate: Long, publishedDate: String) = {
+    val FORMAT2 = new java.text.SimpleDateFormat("yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'")
+    views*1.0 / (currentDate - FORMAT2.parse(publishedDate).getTime)
+  }
+
   def numberToMonthName(number: Int): String = monthName(number)
 
   def getMonthFromString(value: String): Integer = {

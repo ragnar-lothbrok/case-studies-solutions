@@ -1,4 +1,4 @@
-package com.simplilearn.bigdata.january_casestudy_1
+package com.simplilearn.bigdata.january_casestudy_3
 
 import java.util.Properties
 

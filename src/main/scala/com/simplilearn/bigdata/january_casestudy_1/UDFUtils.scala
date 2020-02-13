@@ -109,6 +109,21 @@ object UDFUtils {
     }
   }
 
+  val viewsPerDuration = udf { (views: Long, currentDate: Long, publishedDate: String) => {
+      TimeUtils.viewsPerDuration(views, currentDate, publishedDate)
+    }
+  }
+
+  val commentPerViews = udf { (commentCount: Long, views: Long) => {
+      commentCount*1.0 / (views/1000.0) >= 5
+    }
+  }
+
+  val likesPerViews = udf { (likes: Long, views: Long) => {
+      likes*1.0 / (views/100.0) >= 4
+    }
+  }
+
   val likeDislikeRatio = udf { (likes: Long, dislikes: Long) => {
       if(dislikes == 0) {
         likes*1.0
