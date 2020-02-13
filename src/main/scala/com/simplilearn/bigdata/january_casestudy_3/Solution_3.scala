@@ -75,44 +75,27 @@ object Solution_3 {
    */
   def solution2(dataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String): Unit = {
 
-
-    val condition = Window.partitionBy("year", "video_id").orderBy(functions.desc("timestamp"))
-    val cachedDataset = dataset
-      .withColumn("row", functions.row_number.over(condition))
+    val uniqueVideoFilter = "year"
+    val latestVideoDataCondition = Window.partitionBy(uniqueVideoFilter, "video_id").orderBy(functions.desc("timestamp"))
+    val uniqueVideoDataset = dataset
+      .withColumn("row", functions.row_number.over(latestVideoDataCondition))
       .where("row==1").drop("row")
 
+    val filterColumns = List("views", "comment_count", "likes")
+    for(filterColumn <- filterColumns) {
+      val filterCondition = Window.partitionBy("category_id", uniqueVideoFilter).orderBy(functions.desc(filterColumn))
+      val result1 = uniqueVideoDataset
+        .select("video_id", uniqueVideoFilter, "category_id", "timestamp", filterColumn, "trending_date")
+        .withColumn("row", functions.row_number.over(filterCondition))
+        .where("row==1 OR row==2 OR row==3").drop("row")
+        .orderBy(functions.desc("category_id"), functions.desc(uniqueVideoFilter), functions.desc("views"))
+      write(result1, writeToS3, writeToMongo, bucket, "videosby" + filterColumn + "bycategory")
+    }
 
-    //By number of views
-    val viewsCondition = Window.partitionBy("category_id", "Year").orderBy(functions.desc("views"))
-    val result1 = cachedDataset
-      .select("video_id", "Year", "category_id", "timestamp", "views", "trending_date")
-      .withColumn("row", functions.row_number.over(viewsCondition))
-      .where("row==1 OR row==2 OR row==3").drop("row")
-        .orderBy(functions.desc("category_id"), functions.desc("video_id"), functions.desc("views"))
-    result1.show(10)
-    write(result1, writeToS3, writeToMongo, bucket, "videosbyviewsbycategory")
 
-    //By number of comments
-    val commentsCondition = Window.partitionBy("category_id", "Year").orderBy(functions.desc("comment_count"))
-    val result2 = cachedDataset
-      .select("video_id", "Year","category_id", "timestamp", "comment_count", "trending_date")
-      .withColumn("row", functions.row_number.over(commentsCondition))
-      .where("row==1 OR row==2 OR row==3").drop("row")
-      .orderBy(functions.desc("category_id"), functions.desc("video_id"), functions.desc("comment_count"))
-    write(result2, writeToS3, writeToMongo, bucket, "videosbycommentsbycategory")
-
-    //By number of likes
-    val likesCondition = Window.partitionBy("category_id", "Year").orderBy(functions.desc("likes"))
-    val result3 = cachedDataset
-      .select("video_id", "Year","category_id", "timestamp", "likes", "trending_date")
-      .withColumn("row", functions.row_number.over(likesCondition))
-      .where("row==1 OR row==2 OR row==3").drop("row")
-      .orderBy(functions.desc("category_id"), functions.desc("video_id"), functions.desc("likes"))
-    write(result3, writeToS3, writeToMongo, bucket, "videosbylikesbycategory")
-
-    //By number of likes
+    //By number of interactions
     val totalInteractionsCondition = Window.partitionBy("category_id", "Year").orderBy(functions.desc("totalInteractions"))
-    val result4 = cachedDataset
+    val result4 = uniqueVideoDataset
       .select("video_id", "Year","category_id", "timestamp", "trending_date", "views", "likes", "dislikes", "comment_count")
       .withColumn("totalInteractions", UDFUtils.totalInteractions(dataset("views"), dataset("likes"), dataset("dislikes"), dataset("comment_count")))
       .drop("views", "likes", "dislikes", "comment_count")
@@ -123,6 +106,133 @@ object Solution_3 {
 
   }
 
+  /**
+   * •	Top 3 video of each category on each month
+   * o	By number of views
+   * o	By number of likes
+   * o	By number of dislikes
+   */
+  def solution3(dataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String): Unit = {
+
+    val uniqueVideoFilter = "month"
+    val latestVideoDataCondition = Window.partitionBy(uniqueVideoFilter, "video_id").orderBy(functions.desc("timestamp"))
+    val uniqueVideoDataset = dataset
+      .withColumn("row", functions.row_number.over(latestVideoDataCondition))
+      .where("row==1").drop("row")
+
+    val filterColumns = List("views", "dislikes", "likes")
+    for(filterColumn <- filterColumns) {
+      val filterCondition = Window.partitionBy("category_id", uniqueVideoFilter).orderBy(functions.desc(filterColumn))
+      val result1 = uniqueVideoDataset
+        .select("video_id", uniqueVideoFilter, "category_id", "timestamp", filterColumn, "trending_date")
+        .withColumn("row", functions.row_number.over(filterCondition))
+        .where("row==1 OR row==2 OR row==3").drop("row")
+        .orderBy(functions.desc("category_id"), functions.desc(uniqueVideoFilter), functions.desc("views"))
+      write(result1, writeToS3, writeToMongo, bucket, "videosby" + filterColumn + "bycategory")
+    }
+  }
+
+  /**
+   * •	Top 3 channels
+   *
+   * o	By number of Total views
+   * o	Like/Dislike ratio is highest
+   * o	By number of Total Comments
+   */
+  def solution5(dataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String): Unit = {
+
+    val latestVideoDataCondition = Window.partitionBy("video_id").orderBy(functions.desc("timestamp"))
+    val uniqueVideoDataset = dataset
+      .withColumn("row", functions.row_number.over(latestVideoDataCondition))
+      .where("row==1").drop("row")
+
+    val filterColumns = List("views", "comment_count")
+    for(filterColumn <- filterColumns) {
+      val result1 = uniqueVideoDataset
+        .select("channel_title", filterColumn)
+        .groupBy("channel_title")
+        .agg(functions.sum(filterColumn).as("total"+filterColumn))
+        .orderBy(functions.desc("total"+filterColumn)).limit(3)
+      write(result1, writeToS3, writeToMongo, bucket, "channelbytotal" + filterColumn)
+    }
+
+    {
+      val result1 = uniqueVideoDataset
+        .select("channel_title", "likes", "dislikes")
+        .groupBy("channel_title")
+        .agg(functions.sum("likes").as("totalLikes"), functions.sum("dislikes").as("totalDislikes"))
+        .withColumn("likeDislikeRatio", UDFUtils.likeDislikeRatio(dataset("totalLikes"), dataset("totalDislikes")))
+        .orderBy(functions.desc("likeDislikeRatio")).limit(3)
+      write(result1, writeToS3, writeToMongo, bucket, "channelbylikeDislikeRatio")
+    }
+  }
+
+  /**
+   * •	Top 3 Categories
+   *
+   * o	By number of Total views
+   * o	Like/Dislike ratio is highest
+   * o	By number of Total Comments
+   */
+  def solution6(dataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String): Unit = {
+
+    val latestVideoDataCondition = Window.partitionBy("video_id").orderBy(functions.desc("timestamp"))
+    val uniqueVideoDataset = dataset
+      .withColumn("row", functions.row_number.over(latestVideoDataCondition))
+      .where("row==1").drop("row")
+
+    val filterColumns = List("views", "comment_count")
+    for(filterColumn <- filterColumns) {
+      val result1 = uniqueVideoDataset
+        .select("category_id", filterColumn)
+        .groupBy("category_id")
+        .agg(functions.sum(filterColumn).as("total" + filterColumn))
+        .orderBy(functions.desc("total" + filterColumn)).limit(3)
+      write(result1, writeToS3, writeToMongo, bucket, "categorybytotal" + filterColumn)
+    }
+
+    {
+      val result1 = uniqueVideoDataset
+        .select("category_id", "likes", "dislikes")
+        .groupBy("category_id")
+        .agg(functions.sum("likes").as("totalLikes"), functions.sum("dislikes").as("totalDislikes"))
+        .withColumn("likeDislikeRatio", UDFUtils.likeDislikeRatio(dataset("totalLikes"), dataset("totalDislikes")))
+        .orderBy(functions.desc("likeDislikeRatio")).limit(3)
+      write(result1, writeToS3, writeToMongo, bucket, "categorybylikeDislikeRatio")
+    }
+  }
+
+  /**
+   * •	Top 3 videos
+   *
+   * o	Value calculated by below formula is highest
+   * 	 (Views on most recent date / (Recent Date - Publish Date))
+   */
+
+  /**
+   * •	Top 3 video on each month
+   * o	Like/Dislike ratio is highest
+   */
+  def solution4(dataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String): Unit = {
+
+    val uniqueVideoFilter = "month"
+    val latestVideoDataCondition = Window.partitionBy(uniqueVideoFilter, "video_id").orderBy(functions.desc("timestamp"))
+    val uniqueVideoDataset = dataset
+      .withColumn("row", functions.row_number.over(latestVideoDataCondition))
+      .where("row==1").drop("row")
+      .withColumn("likeDislikeRatio", UDFUtils.likeDislikeRatio(dataset("likes"), dataset("dislikes")))
+
+    val filterColumns = List("likeDislikeRatio")
+    for(filterColumn <- filterColumns) {
+      val filterCondition = Window.partitionBy( uniqueVideoFilter).orderBy(functions.desc(filterColumn))
+      val result1 = uniqueVideoDataset
+        .select("video_id", uniqueVideoFilter, "timestamp", filterColumn, "trending_date")
+        .withColumn("row", functions.row_number.over(filterCondition))
+        .where("row==1 OR row==2 OR row==3").drop("row")
+        .orderBy(functions.desc(uniqueVideoFilter), functions.desc(filterColumn))
+      write(result1, writeToS3, writeToMongo, bucket, "videosby" + filterColumn + "by" + uniqueVideoDataset)
+    }
+  }
 
   def write(modifiedDataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String, name: String) = {
     modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution3/" + bucket + "/" + name)

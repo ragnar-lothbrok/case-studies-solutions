@@ -108,4 +108,13 @@ object UDFUtils {
       views + likes + dislikes + comment_count
     }
   }
+
+  val likeDislikeRatio = udf { (likes: Long, dislikes: Long) => {
+      if(dislikes == 0) {
+        likes*1.0
+      } else {
+        likes*1.0 / dislikes
+      }
+    }
+  }
 }

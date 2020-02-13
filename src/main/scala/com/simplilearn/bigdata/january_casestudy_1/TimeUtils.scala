@@ -57,11 +57,11 @@ object TimeUtils {
 
   def numberToMonthName(number: Int): String = monthName(number)
 
-  def getMonthFromString(value: String): String = {
+  def getMonthFromString(value: String): Integer = {
     val FORMAT2 = new java.text.SimpleDateFormat("yy.dd.MM")
     val cal = Calendar.getInstance
     cal.setTimeInMillis(FORMAT2.parse(value).getTime)
-    cal.get(Calendar.MONTH)+""
+    cal.get(Calendar.MONTH)
   }
 
   def getTimeFromString(value: String): Long = {
@@ -69,11 +69,11 @@ object TimeUtils {
     FORMAT2.parse(value).getTime
   }
 
-  def getYearFromString(value: String): String = {
+  def getYearFromString(value: String): Integer = {
     val FORMAT2 = new java.text.SimpleDateFormat("yy.dd.MM")
     val cal = Calendar.getInstance
     cal.setTimeInMillis(FORMAT2.parse(value).getTime)
-    cal.get(Calendar.YEAR)+""
+    cal.get(Calendar.YEAR)
   }
 
   def getDayFromString(timestamp: String): String = {
