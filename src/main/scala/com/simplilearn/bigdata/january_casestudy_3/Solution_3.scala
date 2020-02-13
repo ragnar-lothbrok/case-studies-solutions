@@ -335,7 +335,7 @@ object Solution_3 {
     //Top 3 videos for which user interaction (views + likes + dislikes + comments) is highest
     var modifiedDataset = cachedDataset
       .select("video_id", "views", "likes", "dislikes", "comment_count")
-      .withColumn("totalInteractions", UDFUtils.totalInteractions(dataset("views"), dataset("likes"), dataset("dislikes"), dataset("comment_count")))
+      .withColumn("totalInteractions", UDFUtils.totalInteractions(cachedDataset("views"), cachedDataset("likes"), cachedDataset("dislikes"), cachedDataset("comment_count")))
       .drop("views", "likes", "dislikes", "comment_count")
       .orderBy(functions.desc("totalInteractions"))
       .limit(3)
@@ -343,9 +343,9 @@ object Solution_3 {
 
 
     //Top 3 videos for which user interaction (views + likes + dislikes + comments) is lowest
-    modifiedDataset = dataset
+    modifiedDataset = cachedDataset
       .select("video_id", "views", "likes", "dislikes", "comment_count")
-      .withColumn("totalInteractions", UDFUtils.totalInteractions(dataset("views"), dataset("likes"), dataset("dislikes"), dataset("comment_count")))
+      .withColumn("totalInteractions", UDFUtils.totalInteractions(cachedDataset("views"), cachedDataset("likes"), cachedDataset("dislikes"), cachedDataset("comment_count")))
       .drop("views", "likes", "dislikes", "comment_count")
       .orderBy(functions.asc("totalInteractions"))
       .limit(3)
@@ -384,7 +384,7 @@ object Solution_3 {
     val totalInteractionsCondition = Window.partitionBy("category_id", "Year").orderBy(functions.desc("totalInteractions"))
     val result4 = uniqueVideoDataset
       .select("video_id", "Year", "category_id", "timestamp", "trending_date", "views", "likes", "dislikes", "comment_count")
-      .withColumn("totalInteractions", UDFUtils.totalInteractions(dataset("views"), dataset("likes"), dataset("dislikes"), dataset("comment_count")))
+      .withColumn("totalInteractions", UDFUtils.totalInteractions(uniqueVideoDataset("views"), uniqueVideoDataset("likes"), uniqueVideoDataset("dislikes"), uniqueVideoDataset("comment_count")))
       .drop("views", "likes", "dislikes", "comment_count")
       .withColumn("row", functions.row_number.over(totalInteractionsCondition))
       .where("row==1 OR row==2 OR row==3").drop("row")
