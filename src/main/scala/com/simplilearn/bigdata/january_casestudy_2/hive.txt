@@ -1,7 +1,12 @@
 CREATE TABLE order_list_table (id INT,order_status STRING,order_products_value FLOAT,order_freight_value FLOAT,order_items_qty FLOAT,customer_city STRING,customer_state STRING,customer_zip_code_prefix STRING,product_name_lenght INT,product_description_lenght INT,product_photos_qty INT,review_score FLOAT,order_purchase_timestamp STRING,order_aproved_at STRING,order_delivered_customer_date STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LOCATION '/user/team_learnkarts/orders';
 
+FROM HDFS
 
 LOAD DATA INPATH '/user/team_learnkarts/orders' INTO TABLE order_list_table;
+
+FROM LOCAL
+
+LOAD DATA LOCAL INPATH '/user/team_learnkarts/orders' INTO TABLE order_list_table;
 
 SHOW CREATE TABLE order_list_table;
 
