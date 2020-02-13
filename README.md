@@ -40,13 +40,8 @@ Steps to run in local
 
 mvn clean install
 
-*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.Solution_1 <data> local*
-
-*java -cp build/libs/kafka-producer-1.0-SNAPSHOT.jar com.simplilearn.bigdata.january_casestudy_1.KafkaProducer localhost:9092 data_topic <files folder>
-
-
 For S3
-==> Make sure you use region which is in code. Else you won't be able to connect.
+==> Make sure you use region which is in code (use oregon). Else you won't be able to connect.
 
 https://cloud.mongodb.com/
 https://docs.mongodb.com/spark-connector/master/configuration/#spark-output-conf
@@ -84,6 +79,17 @@ For Local
 *java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.KafkaProducer localhost:9092 wind_direction_topic /Users/labuser/Downloads/solution_1/wind_direction.csv
 
 *java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.KafkaProducer localhost:9092 wind_speed_topic /Users/labuser/Downloads/solution_1/wind_speed.csv
+
+*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_3.KafkaProducer3 localhost:9092 youtube_topic /Users/labuser/Downloads/USvideos.csv
+
+*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_3.KafkaProducer1 localhost:9092 category_topic /Users/labuser/Downloads/US_category_id.json
+
+
+*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.Solution_3 /Users/labuser/Downloads/category_title.csv /Users/labuser/Downloads/USvideos.csv false false solution3 local
+
+
+*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.Solution_2 /Users/labuser/Downloads/olist_public_dataset.csv false true ecommerce6915 local
+
 
 To run Flume
 flume-ng agent -n kafka-flume  -f ../../../flume_conf/flume_kafka_city.conf

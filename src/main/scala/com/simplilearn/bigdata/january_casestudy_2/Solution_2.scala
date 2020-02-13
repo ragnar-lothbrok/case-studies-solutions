@@ -94,7 +94,7 @@ object Solution_2 {
      * Total sales in each Customer City.
      * City wise order distribution.
      */
-    write(modifiedDataset, writeToS3, writeToMongo, bucket, "day_sales_order_city", timeBucket)
+    write(modifiedDataset, writeToS3, writeToMongo, bucket, "day_sales_order_city"+timeBucket, timeBucket)
 
 
     modifiedDataset = modifiedDataset.select(timeBucket, "customer_state", "totalSalesCitywise", "totalOrderCityWise")
@@ -109,7 +109,7 @@ object Solution_2 {
      * Total sales in each Customer State.
      * State wise order distribution.
      */
-    write(modifiedDataset, writeToS3, writeToMongo, bucket, "day_sales_order_state", timeBucket)
+    write(modifiedDataset, writeToS3, writeToMongo, bucket, "day_sales_order_state"+timeBucket, timeBucket)
 
 
     modifiedDataset = dataset
@@ -121,7 +121,7 @@ object Solution_2 {
     /**
      * Total number of orders sold.
      */
-    write(modifiedDataset, writeToS3, writeToMongo, bucket, "total_orders_per_day", timeBucket)
+    write(modifiedDataset, writeToS3, writeToMongo, bucket, "total_orders_per_"+timeBucket, timeBucket)
 
 
     /**

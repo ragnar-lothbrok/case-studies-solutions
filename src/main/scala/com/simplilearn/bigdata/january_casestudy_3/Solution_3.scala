@@ -376,7 +376,7 @@ object Solution_3 {
         .withColumn("row", functions.row_number.over(filterCondition))
         .where("row==1 OR row==2 OR row==3").drop("row")
         .orderBy(functions.desc("category_id"), functions.desc(uniqueVideoFilter), functions.desc("views"))
-      write(result1, writeToS3, writeToMongo, bucket, "videosby" + filterColumn + "bycategory")
+      write(result1, writeToS3, writeToMongo, bucket, "videosby" + filterColumn + "bycategoryyearly")
     }
 
 
@@ -415,7 +415,7 @@ object Solution_3 {
         .withColumn("row", functions.row_number.over(filterCondition))
         .where("row==1 OR row==2 OR row==3").drop("row")
         .orderBy(functions.desc("category_id"), functions.desc(uniqueVideoFilter), functions.desc("views"))
-      write(result1, writeToS3, writeToMongo, bucket, "videosby" + filterColumn + "bycategory")
+      write(result1, writeToS3, writeToMongo, bucket, "videosby" + filterColumn + "bycategorymonthly")
     }
   }
 

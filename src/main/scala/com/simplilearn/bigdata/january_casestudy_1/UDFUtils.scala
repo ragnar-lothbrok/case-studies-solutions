@@ -115,12 +115,12 @@ object UDFUtils {
   }
 
   val commentPerViews = udf { (commentCount: Long, views: Long) => {
-      commentCount*1.0 / (views/1000.0) >= 5
+      (5/1000.0)*views >= commentCount
     }
   }
 
   val likesPerViews = udf { (likes: Long, views: Long) => {
-      likes*1.0 / (views/100.0) >= 4
+      (4/100.0)*views >= likes
     }
   }
 
