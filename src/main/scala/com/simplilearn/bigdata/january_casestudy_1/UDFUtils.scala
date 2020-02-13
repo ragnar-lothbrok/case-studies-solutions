@@ -51,6 +51,24 @@ object UDFUtils {
     }
   }
 
+  val getYearFromString =
+    udf { (value: String) => {
+      TimeUtils.getYearFromString(value)
+    }
+  }
+
+  val getMonthFromString =
+    udf { (value: String) => {
+      TimeUtils.getMonthFromString(value)
+    }
+  }
+
+  val getTimeFromString =
+    udf { (value: String) => {
+      TimeUtils.getTimeFromString(value)
+    }
+  }
+
   val longToString =
     udf { (value: Long) => {
       value.toString
@@ -83,6 +101,11 @@ object UDFUtils {
 
   val timeTakenToDeliver = udf { (orderPlacedTime: String, timeToDeliver: String) => {
       TimeUtils.getWeekFromString(orderPlacedTime, timeToDeliver)
+    }
+  }
+
+  val totalInteractions = udf { (views: Long, likes: Long, dislikes: Long, comment_count:Long) => {
+      views + likes + dislikes + comment_count
     }
   }
 }

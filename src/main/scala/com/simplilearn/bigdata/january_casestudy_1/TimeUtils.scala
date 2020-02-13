@@ -3,8 +3,6 @@ package com.simplilearn.bigdata.january_casestudy_1
 import java.sql.Timestamp
 import java.util.Calendar
 
-import org.apache.spark.sql.catalyst.util.StringUtils
-
 object TimeUtils {
 
   private val monthName = Array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
@@ -58,6 +56,25 @@ object TimeUtils {
   }
 
   def numberToMonthName(number: Int): String = monthName(number)
+
+  def getMonthFromString(value: String): String = {
+    val FORMAT2 = new java.text.SimpleDateFormat("yy.dd.MM")
+    val cal = Calendar.getInstance
+    cal.setTimeInMillis(FORMAT2.parse(value).getTime)
+    cal.get(Calendar.MONTH)+""
+  }
+
+  def getTimeFromString(value: String): Long = {
+    val FORMAT2 = new java.text.SimpleDateFormat("yy.dd.MM")
+    FORMAT2.parse(value).getTime
+  }
+
+  def getYearFromString(value: String): String = {
+    val FORMAT2 = new java.text.SimpleDateFormat("yy.dd.MM")
+    val cal = Calendar.getInstance
+    cal.setTimeInMillis(FORMAT2.parse(value).getTime)
+    cal.get(Calendar.YEAR)+""
+  }
 
   def getDayFromString(timestamp: String): String = {
     val FORMAT2 = new java.text.SimpleDateFormat("dd-MMM-yyyy")

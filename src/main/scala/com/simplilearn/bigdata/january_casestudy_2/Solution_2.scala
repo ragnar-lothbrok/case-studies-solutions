@@ -1,4 +1,6 @@
-package com.simplilearn.bigdata.january_casestudy_3
+package com.simplilearn.bigdata.january_casestudy_2
+
+import java.util.Calendar
 
 import com.amazonaws.regions.Regions
 import com.mongodb.spark.MongoSpark
@@ -7,9 +9,9 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
 /**
- * Youtube Video Analytics
+ * E- Commerce Analytics
  */
-object Solution_1 {
+object Solution_2 {
 
   def main(args: Array[String]): Unit = {
 
@@ -181,15 +183,15 @@ object Solution_1 {
     val sparkSession = SparkSession.builder.appName(appName).master(if (master.equalsIgnoreCase("local")) "local[*]"
     else master)
       .config("spark.mongodb.output.uri", uri)
-      .config("spark.mongodb.output.collection", "youtube")
+      .config("spark.mongodb.output.collection", "ecommerce")
       .config("spark.mongodb.output.database", "test")
       .getOrCreate
     System.out.println("Spark version " + sparkSession.version)
     val hadoopConf = sparkSession.sparkContext.hadoopConfiguration
-        hadoopConf.set("fs.s3.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
-        hadoopConf.set("fs.s3.awsAccessKeyId", System.getenv("AWS_ACCESS_KEY_ID"))
-        hadoopConf.set("fs.s3.awsSecretAccessKey", System.getenv("AWS_SECRET_ACCESS_KEY"))
-        hadoopConf.set("fs.s3a.endpoint", "s3."+Regions.US_WEST_2.getName+".amazonaws.com")
+    hadoopConf.set("fs.s3.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
+    hadoopConf.set("fs.s3.awsAccessKeyId", System.getenv("AWS_ACCESS_KEY_ID"))
+    hadoopConf.set("fs.s3.awsSecretAccessKey", System.getenv("AWS_SECRET_ACCESS_KEY"))
+    hadoopConf.set("fs.s3a.endpoint", "s3." + Regions.US_WEST_2.getName + ".amazonaws.com")
     sparkSession
   }
 

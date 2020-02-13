@@ -103,3 +103,11 @@ Headers
 olist_public_dataset.csv id,order_status,order_products_value,order_freight_value,order_items_qty,customer_city,customer_state,customer_zip_code_prefix,product_name_lenght,product_description_lenght,product_photos_qty,review_score,order_purchase_timestamp,order_aproved_at,order_delivered_customer_date
 
 java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_2.Solution_1 /Users/labuser/Downloads/olist_public_dataset.csv false false bucket local
+
+
+Headers
+category title csv = category, title
+us videos csv = video_id,trending_date,title,channel_title,category_id,publish_time,tags,views,likes,dislikes,comment_count,comments_disabled,ratings_disabled
+
+
+/Users/labuser/Downloads/category_title.csv /Users/labuser/Downloads/USvideos.csv false false bucket local
