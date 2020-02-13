@@ -44,6 +44,62 @@ object Solution_3 {
     solution8(modifiedDataset, writeToS3, writeToMongo, bucket)
     solution9(modifiedDataset, writeToS3, writeToMongo, bucket)
     solution10(modifiedDataset, writeToS3, writeToMongo, bucket)
+    solution11(modifiedDataset, writeToS3, writeToMongo, bucket)
+    solution12(modifiedDataset, writeToS3, writeToMongo, bucket)
+    solution13(modifiedDataset, writeToS3, writeToMongo, bucket)
+  }
+
+  /**
+   *	o	All videos belong to a specific category
+   */
+  def solution11(dataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String): Unit = {
+
+    val latestVideoDataCondition = Window.partitionBy("video_id").orderBy(functions.desc("timestamp"))
+    val uniqueVideoDataset = dataset
+      .withColumn("row", functions.row_number.over(latestVideoDataCondition))
+      .where("row==1").drop("row")
+
+    val result1 = uniqueVideoDataset
+      .select("category_id", "video_id")
+      .groupBy("category_id")
+      .agg(functions.collect_list("video_id").as("allvideos"))
+      .drop("video_id")
+      .orderBy(functions.desc("category_id"))
+    write(result1, writeToS3, writeToMongo, bucket, "videosofcategory")
+  }
+
+  /**
+   *	All videos belong to any given channel
+   */
+  def solution12(dataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String): Unit = {
+
+    val latestVideoDataCondition = Window.partitionBy("video_id").orderBy(functions.desc("timestamp"))
+    val uniqueVideoDataset = dataset
+      .withColumn("row", functions.row_number.over(latestVideoDataCondition))
+      .where("row==1").drop("row")
+
+    val result1 = uniqueVideoDataset
+      .select("channel_title", "video_id")
+      .groupBy("channel_title")
+      .agg(functions.collect_list("video_id").as("allvideos"))
+      .drop("video_id")
+      .orderBy(functions.desc("channel_title"))
+    write(result1, writeToS3, writeToMongo, bucket, "videosofchannel")
+  }
+
+  /**
+   *	All videos belong to any given channel
+   */
+  def solution13(dataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String): Unit = {
+
+    val latestVideoDataCondition = Window.partitionBy("video_id").orderBy(functions.desc("timestamp"))
+    val uniqueVideoDataset = dataset
+      .withColumn("row", functions.row_number.over(latestVideoDataCondition))
+      .where("row==1").drop("row")
+
+    val result1 = uniqueVideoDataset
+      .select("title", "video_id")
+    write(result1, writeToS3, writeToMongo, bucket, "videosandIds")
   }
 
   /**
