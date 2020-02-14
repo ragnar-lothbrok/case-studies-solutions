@@ -15,8 +15,8 @@ object Solution_2 {
 
   def main(args: Array[String]): Unit = {
 
-    if (args.length != 8) {
-      System.out.println("Please provide <input_files> <writeS3> <writeMongo> <bucket> <spark_master> <mongousername> <mongopasswprd> <mongoserver>")
+    if (args.length != 10) {
+      System.out.println("Please provide <input_files> <writeS3> <writeMongo> <bucket> <spark_master> <mongousername> <mongopasswprd> <mongoserver> <awskey> <awssecret>")
       System.exit(0)
     }
 
@@ -26,7 +26,7 @@ object Solution_2 {
     val bucket: String = args(3)
 
 
-    val sparkSession = getSparkSession("ECommerce-analysis", args(4), args(5), args(6), args(7))
+    val sparkSession = getSparkSession("ECommerce-analysis", args(4), args(5), args(6), args(7), args(8), args(9))
     val dataset = readFile(input_files, readWithHeader(dataSchema(), sparkSession))
     val modifiedDataset = filterAndModify(dataset)
 
@@ -175,7 +175,7 @@ object Solution_2 {
   }
 
 
-  def getSparkSession(appName: String, master: String, username:String, password:String, server:String) = {
+  def getSparkSession(appName: String, master: String, username:String, password:String, server:String, awsKey:String, awsSecret:String) = {
     val uri: String = "mongodb://" + username + ":" + password + "@" + server + ":27017"
     print("==========="+uri)
     val sparkSession = SparkSession.builder.appName(appName).master(if (master.equalsIgnoreCase("local")) "local[*]"
@@ -187,8 +187,8 @@ object Solution_2 {
     System.out.println("Spark version " + sparkSession.version)
     val hadoopConf = sparkSession.sparkContext.hadoopConfiguration
     hadoopConf.set("fs.s3.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
-    hadoopConf.set("fs.s3.awsAccessKeyId", System.getenv("AWS_ACCESS_KEY_ID"))
-    hadoopConf.set("fs.s3.awsSecretAccessKey", System.getenv("AWS_SECRET_ACCESS_KEY"))
+    hadoopConf.set("fs.s3.awsAccessKeyId", awsKey)
+    hadoopConf.set("fs.s3.awsSecretAccessKey", awsSecret)
     hadoopConf.set("fs.s3a.endpoint", "s3." + Regions.US_WEST_2.getName + ".amazonaws.com")
     sparkSession
   }

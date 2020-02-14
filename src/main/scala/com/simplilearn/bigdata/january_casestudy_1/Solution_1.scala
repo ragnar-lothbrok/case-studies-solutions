@@ -12,8 +12,8 @@ object Solution_1 {
 
   def main(args: Array[String]): Unit = {
 
-    if(args.length != 14) {
-      System.out.println("Please provide <city_attributes> <pressure> <humidity> <temperature> <weather_description> <wind_direction> <wind_speed> <writeS3> <writeMongo> <bucket> <spark_master> <mongousername> <mongopasswprd> <mongoserver>")
+    if(args.length != 16) {
+      System.out.println("Please provide <city_attributes> <pressure> <humidity> <temperature> <weather_description> <wind_direction> <wind_speed> <writeS3> <writeMongo> <bucket> <spark_master> <mongousername> <mongopasswprd> <mongoserver> <awskey> <awssecret>")
       System.exit(0)
     }
 
@@ -29,7 +29,7 @@ object Solution_1 {
     val bucket: String = args(9)
 
 
-    val sparkSession = getSparkSession("weather-analysis", args(10), args(11), args(12), args(13))
+    val sparkSession = getSparkSession("weather-analysis", args(10), args(11), args(12), args(13), args(14), args(15))
     val dataset = readFile(city_attributes, readWithHeader(citySchema(), sparkSession))
 
     val cityMap = createCityMap(dataset)
@@ -195,7 +195,7 @@ object Solution_1 {
     cityCountryMap
   }
 
-  def getSparkSession(appName: String, master: String, username:String, password:String, server:String) = {
+  def getSparkSession(appName: String, master: String, username:String, password:String, server:String, awsKey:String, awsSecret:String) = {
     val uri: String = "mongodb://" + username + ":" + password + "@" + server + ":27017"
     val sparkSession = SparkSession.builder.appName(appName).master(if (master.equalsIgnoreCase("local")) "local[*]"
     else master)
@@ -206,8 +206,8 @@ object Solution_1 {
     System.out.println("Spark version " + sparkSession.version)
     val hadoopConf = sparkSession.sparkContext.hadoopConfiguration
     hadoopConf.set("fs.s3.impl", "org.apache.hadoop.fs.s3native.NativeS3FileSystem")
-    hadoopConf.set("fs.s3.awsAccessKeyId", System.getenv("AWS_ACCESS_KEY_ID"))
-    hadoopConf.set("fs.s3.awsSecretAccessKey", System.getenv("AWS_SECRET_ACCESS_KEY"))
+    hadoopConf.set("fs.s3.awsAccessKeyId", awsKey)
+    hadoopConf.set("fs.s3.awsSecretAccessKey", awsSecret)
     hadoopConf.set("fs.s3a.endpoint", "s3."+Regions.US_WEST_2.getName+".amazonaws.com")
     sparkSession
   }
