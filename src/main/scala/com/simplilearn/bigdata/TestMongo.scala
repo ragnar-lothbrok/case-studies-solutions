@@ -2,6 +2,8 @@ package com.simplilearn.bigdata
 
 import com.amazonaws.regions.Regions
 import com.mongodb.spark.MongoSpark
+import org.apache.hadoop.fs.LocalFileSystem
+import org.apache.hadoop.hdfs.DistributedFileSystem
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
@@ -12,9 +14,11 @@ object TestMongo {
 
   def main(args: Array[String]): Unit = {
 
-    val sparkSession = getSparkSession("ECommerce-analysis", "local")
-    val modifiedDataset = readFile("/tmp/city_attributes.csv", readWithHeader(dataSchema(), sparkSession))
     val bucket = args(0)
+    val path = args(1)
+
+    val sparkSession = getSparkSession("ECommerce-analysis", "local")
+    val modifiedDataset = readFile(path, readWithHeader(dataSchema(), sparkSession))
     MongoSpark.save(modifiedDataset);
     modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://" + bucket + "/dummy/")
     print("Data Pushed to S3.")
@@ -39,14 +43,16 @@ object TestMongo {
     hadoopConf.set("fs.s3.awsAccessKeyId", System.getenv("AWS_ACCESS_KEY_ID"))
     hadoopConf.set("fs.s3.awsSecretAccessKey", System.getenv("AWS_SECRET_ACCESS_KEY"))
     hadoopConf.set("fs.s3a.endpoint", "s3." + Regions.US_WEST_2.getName + ".amazonaws.com")
+    hadoopConf.set("fs.hdfs.impl", classOf[DistributedFileSystem].getName)
+    hadoopConf.set("fs.file.impl", classOf[LocalFileSystem].getName)
     sparkSession
   }
 
   def readFile(path: String, dataFrameReader: DataFrameReader) = {
     System.out.println("Reading file " + path)
     val dataset = dataFrameReader.csv(path)
-    System.out.println("Dataset Schema " + dataset.schema)
-    System.out.println("Row Count" + dataset.count())
+    println("Dataset Schema " + dataset.schema)
+    println("Row Count" + dataset.count())
     dataset
   }
 

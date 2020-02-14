@@ -136,4 +136,6 @@ yarn application -kill application_1581652696100_0009
 
 hdfs dfs -mkdir hdfs://ec2-3-20-223-171.us-east-2.compute.amazonaws.com/tmp/orders/
 
-hdfs dfs -put hdfs://ec2-3-20-223-171.us-east-2.compute.amazonaws.com/tmp/orders/
+hdfs dfs -put <> hdfs://ec2-3-20-223-171.us-east-2.compute.amazonaws.com/tmp/orders/
+
+hdfs dfs -put <> hdfs://ec2-3-20-223-171.us-east-2.compute.amazonaws.com/tmp/test/
