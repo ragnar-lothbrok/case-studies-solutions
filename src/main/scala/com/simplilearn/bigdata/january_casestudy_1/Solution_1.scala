@@ -155,22 +155,21 @@ object Solution_1 {
       .withColumn("recordtype", functions.lit(datasetType))
       .withColumn("timeType", functions.lit(timeColumn))
 
-    modifiedDataset.head(5)
-
+    val count = modifiedDataset.count()
     modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution1/" + dataColumn + "/" + datasetType + "/" +timeColumn + "/")
-    print("Output created in local tmp directory "+timeColumn+"-"+dataColumn+"-"+datasetType)
+    print(count + " Output created in local tmp directory "+timeColumn+"-"+dataColumn+"-"+datasetType)
 //    for(column <- modifiedDataset.columns) {
 //      modifiedDataset = modifiedDataset.withColumn(column, modifiedDataset(column).cast(StringType))
 //    }
 
    if(writeToMongo) {
      MongoSpark.save(modifiedDataset)
-     print("Data Pushed to Mongo for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+     print(count + " Data Pushed to Mongo for "+timeColumn+"-"+dataColumn+"-"+datasetType)
    }
 
     if(writeToS3) {
       modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://"+bucket+"/"+ dataColumn + "/" + datasetType + "/" +timeColumn)
-      print("Data Pushed to S3 for "+timeColumn+"-"+dataColumn+"-"+datasetType)
+      print(count + " Data Pushed to S3 for "+timeColumn+"-"+dataColumn+"-"+datasetType)
     }
 
   }

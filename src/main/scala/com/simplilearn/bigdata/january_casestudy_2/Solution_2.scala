@@ -153,17 +153,18 @@ object Solution_2 {
 
 
   def write(modifiedDataset: Dataset[Row], writeToS3: Boolean, writeToMongo: Boolean, bucket: String, name: String, timeBucket: String) = {
+    val count = modifiedDataset.count()
     modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("/tmp/solution2/" + bucket + "/" + timeBucket + "/" + name)
-    print("Output created in local tmp directory /tmp/solution2/" + bucket)
+    println("Output created in local tmp directory /tmp/solution2/" + bucket)
 
     if (writeToMongo) {
       MongoSpark.save(modifiedDataset)
-      print("Data Pushed to Mongo")
+      println("Data Pushed to Mongo = "+count)
     }
 
     if (writeToS3) {
-      modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://" + bucket + "/solution2/")
-      print("Data Pushed to S3.")
+      modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://" + bucket + "/solution2/" + name + "/" + "/" + timeBucket + "/" + Calendar.getInstance().getTimeInMillis)
+      println("Data Pushed to S3 = "+count)
     }
   }
 
