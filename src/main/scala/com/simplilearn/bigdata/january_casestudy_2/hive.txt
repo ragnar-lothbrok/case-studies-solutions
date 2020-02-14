@@ -12,4 +12,4 @@ LOAD DATA LOCAL INPATH '/user/team_learnkarts/orders' INTO TABLE order_list_tabl
 
 SHOW CREATE TABLE order_list_table;
 
-INSERT OVERWRITE DIRECTORY '/tmp/orders/' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' SELECT * FROM order_list_table;
+INSERT OVERWRITE DIRECTORY '/tmp/orders/orders.csv' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' SELECT * FROM order_list_table;
