@@ -81,7 +81,7 @@ For Local
 
 *java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.KafkaProducer localhost:9092 wind_speed_topic /Users/labuser/Downloads/solution_1/wind_speed.csv
 
-*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_3.KafkaProducer3 localhost:9092 youtube_topic /Users/labuser/Downloads/USvideos.csv
+*java -cp case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar  com.simplilearn.bigdata.january_casestudy_3.KafkaProducer3 localhost:9092 category_topic US_category_id.json
 
 *java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_3.KafkaProducer1 localhost:9092 category_topic /Users/labuser/Downloads/US_category_id.json
 
