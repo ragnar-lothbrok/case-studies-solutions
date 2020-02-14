@@ -130,6 +130,10 @@ spark-submit --master yarn --deploy-mode cluster --class  com.simplilearn.bigdat
 
 yarn application -list -appStates ALL
 
-yarn logs -applicationId application_1581652696100_0005  -appOwner hadoop 
+yarn logs -applicationId application_1581652696100_0009  -appOwner hadoop 
 
-yarn application -kill application_1581652696100_0006
+yarn application -kill application_1581652696100_0009
+
+hdfs dfs -mkdir hdfs://ec2-3-20-223-171.us-east-2.compute.amazonaws.com/tmp/orders/
+
+hdfs dfs -put hdfs://ec2-3-20-223-171.us-east-2.compute.amazonaws.com/tmp/orders/
