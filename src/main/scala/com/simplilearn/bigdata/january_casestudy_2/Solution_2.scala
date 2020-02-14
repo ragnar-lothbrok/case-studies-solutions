@@ -15,8 +15,8 @@ object Solution_2 {
 
   def main(args: Array[String]): Unit = {
 
-    if (args.length != 5) {
-      System.out.println("Please provide <input_files> <writeS3> <writeMongo> <bucket> <spark_master>")
+    if (args.length != 8) {
+      System.out.println("Please provide <input_files> <writeS3> <writeMongo> <bucket> <spark_master> <mongousername> <mongopasswprd> <mongoserver>")
       System.exit(0)
     }
 
@@ -26,7 +26,7 @@ object Solution_2 {
     val bucket: String = args(3)
 
 
-    val sparkSession = getSparkSession("ECommerce-analysis", args(4))
+    val sparkSession = getSparkSession("ECommerce-analysis", args(4), args(5), args(6), args(7))
     val dataset = readFile(input_files, readWithHeader(dataSchema(), sparkSession))
     val modifiedDataset = filterAndModify(dataset)
 
@@ -175,11 +175,9 @@ object Solution_2 {
   }
 
 
-  def getSparkSession(appName: String, master: String) = {
-    val username = System.getenv("MONGOUSERNAME")
-    val password = System.getenv("MONGOPASSWORD")
-    val server   = System.getenv("MONGOSERVER")
+  def getSparkSession(appName: String, master: String, username:String, password:String, server:String) = {
     val uri: String = "mongodb://" + username + ":" + password + "@" + server + ":27017"
+    print("==========="+uri)
     val sparkSession = SparkSession.builder.appName(appName).master(if (master.equalsIgnoreCase("local")) "local[*]"
     else master)
       .config("spark.mongodb.output.uri", uri)

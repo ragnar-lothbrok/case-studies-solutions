@@ -55,6 +55,7 @@ https://stackoverflow.com/questions/51707267/mongodb-atlas-connection-not-workin
 ==> Java and 3.4 or later
 ==> Use Mongo URI in your Application 
 
+aws configure
 export MONGOUSERNAME=
 export MONGOPASSWORD=
 export MONGOSERVER=
@@ -85,10 +86,12 @@ For Local
 *java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_3.KafkaProducer1 localhost:9092 category_topic /Users/labuser/Downloads/US_category_id.json
 
 
-*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.Solution_3 /Users/labuser/Downloads/category_title.csv /Users/labuser/Downloads/USvideos.csv false false solution3 local
+*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_3.Solution_3 /Users/labuser/Downloads/category_title.csv /Users/labuser/Downloads/USvideos.csv false false solution3 local
 
 
-*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.Solution_2 /Users/labuser/Downloads/olist_public_dataset.csv false true ecommerce6915 local
+*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_2.Solution_2 /Users/labuser/Downloads/olist_public_dataset.csv false true ecommerce6915 local
+
+hdfs dfs -put olist_public_dataset.csv  /tmp/
 
 
 To run Flume
@@ -117,3 +120,16 @@ us videos csv = video_id,trending_date,title,channel_title,category_id,publish_t
 
 
 /Users/labuser/Downloads/category_title.csv /Users/labuser/Downloads/USvideos.csv false false bucket local
+
+
+java -cp case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.TestMongo  solution1output
+
+
+spark-submit --master yarn --deploy-mode cluster --class  com.simplilearn.bigdata.january_casestudy_2.Solution_2 case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar /tmp/olist_public_dataset.csv true true solution1output yarn
+
+
+yarn application -list -appStates ALL
+
+yarn logs -applicationId application_1581652696100_0005  -appOwner hadoop 
+
+yarn application -kill application_1581652696100_0006

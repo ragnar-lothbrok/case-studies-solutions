@@ -12,8 +12,8 @@ object Solution_1 {
 
   def main(args: Array[String]): Unit = {
 
-    if(args.length != 11) {
-      System.out.println("Please provide <city_attributes> <pressure> <humidity> <temperature> <weather_description> <wind_direction> <wind_speed> <writeS3> <writeMongo> <bucket> <spark_master>")
+    if(args.length != 14) {
+      System.out.println("Please provide <city_attributes> <pressure> <humidity> <temperature> <weather_description> <wind_direction> <wind_speed> <writeS3> <writeMongo> <bucket> <spark_master> <mongousername> <mongopasswprd> <mongoserver>")
       System.exit(0)
     }
 
@@ -29,7 +29,7 @@ object Solution_1 {
     val bucket: String = args(9)
 
 
-    val sparkSession = getSparkSession("weather-analysis", args(10))
+    val sparkSession = getSparkSession("weather-analysis", args(10), args(11), args(12), args(13))
     val dataset = readFile(city_attributes, readWithHeader(citySchema(), sparkSession))
 
     val cityMap = createCityMap(dataset)
@@ -195,10 +195,7 @@ object Solution_1 {
     cityCountryMap
   }
 
-  def getSparkSession(appName: String, master: String) = {
-    val username = System.getenv("MONGOUSERNAME")
-    val password = System.getenv("MONGOPASSWORD")
-    val server   = System.getenv("MONGOSERVER")
+  def getSparkSession(appName: String, master: String, username:String, password:String, server:String) = {
     val uri: String = "mongodb://" + username + ":" + password + "@" + server + ":27017"
     val sparkSession = SparkSession.builder.appName(appName).master(if (master.equalsIgnoreCase("local")) "local[*]"
     else master)

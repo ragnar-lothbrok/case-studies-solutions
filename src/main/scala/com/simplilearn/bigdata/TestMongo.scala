@@ -1,10 +1,7 @@
 package com.simplilearn.bigdata
 
-import java.util.Calendar
-
 import com.amazonaws.regions.Regions
 import com.mongodb.spark.MongoSpark
-import com.simplilearn.bigdata.january_casestudy_1.UDFUtils
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
@@ -17,10 +14,10 @@ object TestMongo {
 
     val sparkSession = getSparkSession("ECommerce-analysis", "local")
     val modifiedDataset = readFile("/tmp/city_attributes.csv", readWithHeader(dataSchema(), sparkSession))
-
+    val bucket = args(0)
     MongoSpark.save(modifiedDataset);
-//    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://myucketsimplilearn123/dummy/")
-//    print("Data Pushed to S3.")
+    modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://" + bucket + "/dummy/")
+    print("Data Pushed to S3.")
 
   }
 

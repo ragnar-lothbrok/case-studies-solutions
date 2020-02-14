@@ -14,8 +14,8 @@ object Solution_3 {
 
   def main(args: Array[String]): Unit = {
 
-    if (args.length != 6) {
-      System.out.println("Please provide <category_tltle_csv> <us_videos_csv> <writeS3> <writeMongo> <bucket> <spark_master>")
+    if (args.length != 9) {
+      System.out.println("Please provide <category_tltle_csv> <us_videos_csv> <writeS3> <writeMongo> <bucket> <spark_master> <mongousername> <mongopasswprd> <mongoserver>")
       System.exit(0)
     }
 
@@ -26,7 +26,7 @@ object Solution_3 {
     val bucket: String = args(4)
 
 
-    val sparkSession = getSparkSession("Youtube-Analysis", args(5))
+    val sparkSession = getSparkSession("Youtube-Analysis", args(5), args(6), args(7), args(8))
     val categoryTitleDataset = readFile(categoryTitlePath, readWithHeader(categorySchema(), sparkSession))
     val usVideosDataset = readFile(usVideosPath, readWithHeader(dataSchema(), sparkSession))
 
@@ -265,10 +265,7 @@ object Solution_3 {
     write(result1, writeToS3, writeToMongo, bucket, "videoscountpercategory")
   }
 
-  def getSparkSession(appName: String, master: String) = {
-    val username = System.getenv("MONGOUSERNAME")
-    val password = System.getenv("MONGOPASSWORD")
-    val server = System.getenv("MONGOSERVER")
+  def getSparkSession(appName: String, master: String, username:String, password:String, server:String) = {
     val uri: String = "mongodb://" + username + ":" + password + "@" + server + ":27017"
     val sparkSession = SparkSession.builder.appName(appName).master(if (master.equalsIgnoreCase("local")) "local[*]"
     else master)
