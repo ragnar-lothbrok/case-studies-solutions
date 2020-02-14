@@ -427,7 +427,8 @@ object Solution_3 {
     }
 
     if (writeToS3) {
-      modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://" + bucket + "/solution3/" + name)
+      val result = modifiedDataset.withColumn("doctype", functions.lit(name))
+      result.coalesce(1).write.format("json").mode("overwrite").save("s3a://" + bucket + "/solution3/" + name)
       print(count +" Data Pushed to S3 /tmp/solution3/" + bucket + "/" + name)
     }
   }

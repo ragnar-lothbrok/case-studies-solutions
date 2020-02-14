@@ -163,7 +163,9 @@ object Solution_2 {
     }
 
     if (writeToS3) {
-      modifiedDataset.coalesce(1).write.format("json").mode("overwrite").save("s3a://" + bucket + "/solution2/" + name + "/" + "/" + timeBucket + "/" + Calendar.getInstance().getTimeInMillis)
+      val collectionName = name + "-" + timeBucket
+      val result = modifiedDataset.withColumn("doctype", functions.lit(collectionName))
+      result.coalesce(1).write.format("json").mode("overwrite").save("s3a://" + bucket + "/solution2/" + name + "/" + "/" + timeBucket + "/" + Calendar.getInstance().getTimeInMillis)
       println("Data Pushed to S3 = "+count)
     }
   }
