@@ -139,3 +139,7 @@ hdfs dfs -mkdir hdfs://ec2-3-20-223-171.us-east-2.compute.amazonaws.com/tmp/orde
 hdfs dfs -put <> hdfs://ec2-3-20-223-171.us-east-2.compute.amazonaws.com/tmp/orders/
 
 hdfs dfs -put <> hdfs://ec2-3-20-223-171.us-east-2.compute.amazonaws.com/tmp/test/
+
+
+https://stackoverflow.com/questions/40254319/how-to-run-external-jar-functions-in-spark-shell
+https://stackoverflow.com/questions/42935242/how-to-create-sparksession-from-existing-sparkcontext
