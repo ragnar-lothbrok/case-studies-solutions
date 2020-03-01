@@ -34,7 +34,7 @@ To change permission of directory
 *hadoop dfs -chown <user>:supergroup  /data/data_csvs/*
 
 
-*/usr/local/spark/spark-2.2.0-bin-hadoop2.6/bin/spark-submit --master yarn --deploy-mode cluster --class  com.simplilearn.bigdata.january_casestudy_1.Solution_1 case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar <paths> yarn <documentdb_username> <doucmentdb_password> <documentdbcluster><aws_key> <aws_secret>*
+*/usr/local/spark/spark-2.2.0-bin-hadoop2.6/bin/spark-submit --master yarn --deploy-mode cluster --class  com.simplilearn.bigdata.january_casestudy_1.Solution_1 case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar <paths> yarn <documentdb_username> <doucmentdb_password> <documentdbcluster> <aws_key> <aws_secret>*
 
 Steps to run in local
 
@@ -64,7 +64,7 @@ export AWS_SECRET_ACCESS_KEY=
 
 
 For Local 
-*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.Solution_1 /Users/labuser/Downloads/solution_1/city_attributes.csv /Users/labuser/Downloads/solution_1/pressure.csv /Users/labuser/Downloads/solution_1/humidity.csv /Users/labuser/Downloads/solution_1/temperature.csv /Users/labuser/Downloads/solution_1/weather_description.csv /Users/labuser/Downloads/solution_1/wind_direction.csv /Users/labuser/Downloads/solution_1/wind_speed.csv false false bucket local <documentdb_username> <doucmentdb_password> <documentdbcluster><aws_key> <aws_secret>
+*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.Solution_1 /Users/labuser/Downloads/solution_1/city_attributes.csv /Users/labuser/Downloads/solution_1/pressure.csv /Users/labuser/Downloads/solution_1/humidity.csv /Users/labuser/Downloads/solution_1/temperature.csv /Users/labuser/Downloads/solution_1/weather_description.csv /Users/labuser/Downloads/solution_1/wind_direction.csv /Users/labuser/Downloads/solution_1/wind_speed.csv false false bucket local <documentdb_username> <doucmentdb_password> <documentdbcluster> <aws_key> <aws_secret>
 
 
 *java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_1.KafkaProducer localhost:9092 city_topic /Users/labuser/Downloads/solution_1/city_attributes.csv 
@@ -86,10 +86,10 @@ For Local
 *java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_3.KafkaProducer1 localhost:9092 category_topic /Users/labuser/Downloads/US_category_id.json
 
 
-*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_3.Solution_3 /Users/labuser/Downloads/category_title.csv /Users/labuser/Downloads/USvideos.csv false false solution3 local <documentdb_username> <doucmentdb_password> <documentdbcluster><aws_key> <aws_secret>
+*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_3.Solution_3 /Users/labuser/Downloads/category_title.csv /Users/labuser/Downloads/USvideos.csv false false solution3 local <documentdb_username> <doucmentdb_password> <documentdbcluster> <aws_key> <aws_secret>
 
 
-*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_2.Solution_2 /Users/labuser/Downloads/olist_public_dataset.csv false true ecommerce6915 local <documentdb_username> <doucmentdb_password> <documentdbcluster><aws_key> <aws_secret>
+*java -cp target/case-studies-solutions-1.0-SNAPSHOT-jar-with-dependencies.jar com.simplilearn.bigdata.january_casestudy_2.Solution_2 /Users/labuser/Downloads/olist_public_dataset.csv false true ecommerce6915 local <documentdb_username> <doucmentdb_password> <documentdbcluster> <aws_key> <aws_secret>
 
 hdfs dfs -put olist_public_dataset.csv  /tmp/
 
